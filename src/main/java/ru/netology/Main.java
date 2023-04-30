@@ -1,63 +1,53 @@
 package ru.netology;
 
+import java.util.Comparator;
 import java.util.Random;
 import java.util.concurrent.ArrayBlockingQueue;
 
 public class Main {
     public static int lettersSize = 100;
-    public static ArrayBlockingQueue<String> maxA = new ArrayBlockingQueue<>(lettersSize);
-    public static ArrayBlockingQueue<String> maxB = new ArrayBlockingQueue<>(lettersSize);
-    public static ArrayBlockingQueue<String> maxC = new ArrayBlockingQueue<>(lettersSize);
-
+    public static ArrayBlockingQueue<String> queueA = new ArrayBlockingQueue<>(lettersSize);
+    public static ArrayBlockingQueue<String> queueB = new ArrayBlockingQueue<>(lettersSize);
+    public static ArrayBlockingQueue<String> queueC = new ArrayBlockingQueue<>(lettersSize);
 
     public static void main(String[] args) throws InterruptedException {
         Thread textGeneration = new Thread(() -> {
             for (int i = 0; i < lettersSize; i++) {
                 Random random = new Random();
-                maxA.add(generateText("abc", 3 + random.nextInt(3)));
-                maxB.add(generateText("abc", 3 + random.nextInt(3)));
-                maxC.add(generateText("abc", 3 + random.nextInt(3)));
+                queueA.add(generateText("abc", 3 + random.nextInt(3)));
+                queueB.add(generateText("abc", 3 + random.nextInt(3)));
+                queueC.add(generateText("abc", 3 + random.nextInt(3)));
             }
         });
-
-        Thread filterA = new Thread(() -> {
-            for (int i = 0; i < lettersSize; i++) {
-                for (String text : maxA) {
-                    if (!allSameA(text)) {
-                        maxA.remove(text);
-                    }
-                }
-            }
-        });
-
-        Thread filterB = new Thread(() -> {
-            for (int i = 0; i < lettersSize; i++) {
-                for (String text : maxB) {
-                    if (!allSameB(text)) {
-                        maxB.remove(text);
-                    }
-                }
-            }
-        });
-
-        Thread filterC = new Thread(() -> {
-            for (int i = 0; i < lettersSize; i++) {
-                for (String text : maxC) {
-                    if (!allSameC(text)) {
-                        maxC.remove(text);
-                    }
-                }
-            }
-        });
-
         textGeneration.start();
         textGeneration.join();
-        filterA.start();
-        filterB.start();
-        filterC.start();
-        filterA.join();
-        filterB.join();
-        filterC.join();
+
+        Thread findMaxA = new Thread(() -> {
+            var maxA = queueA.stream()
+                    .filter(s -> s.chars().allMatch(c -> c == 'a'))
+                    .max(Comparator.comparing(String::length));
+            maxA.ifPresent(System.out::println);
+        });
+        findMaxA.start();
+        findMaxA.join();
+
+        Thread findMaxB = new Thread(() -> {
+            var maxB = queueA.stream()
+                    .filter(s -> s.chars().allMatch(c -> c == 'b'))
+                    .max(Comparator.comparing(String::length));
+            maxB.ifPresent(System.out::println);
+        });
+        findMaxB.start();
+        findMaxB.join();
+
+        Thread findMaxC = new Thread(() -> {
+            var maxC = queueA.stream()
+                    .filter(s -> s.chars().allMatch(c -> c == 'c'))
+                    .max(Comparator.comparing(String::length));
+            maxC.ifPresent(System.out::println);
+        });
+        findMaxC.start();
+        findMaxC.join();
     }
 
     public static String generateText(String letters, int length) {
@@ -67,17 +57,5 @@ public class Main {
             text.append(letters.charAt(random.nextInt(letters.length())));
         }
         return text.toString();
-    }
-
-    public static boolean allSameA(String str) {
-        return str != null && !str.isEmpty() && str.chars().allMatch(ch -> 'a' == ch);
-    }
-
-    public static boolean allSameB(String str) {
-        return str != null && !str.isEmpty() && str.chars().allMatch(ch -> 'b' == ch);
-    }
-
-    public static boolean allSameC(String str) {
-        return str != null && !str.isEmpty() && str.chars().allMatch(ch -> 'c' == ch);
     }
 }
