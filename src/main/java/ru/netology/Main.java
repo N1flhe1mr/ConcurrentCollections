@@ -1,18 +1,19 @@
 package ru.netology;
 
 import java.util.Comparator;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ArrayBlockingQueue;
 
 public class Main {
-    public static int lettersSize = 100;
-    public static ArrayBlockingQueue<String> queueA = new ArrayBlockingQueue<>(lettersSize);
-    public static ArrayBlockingQueue<String> queueB = new ArrayBlockingQueue<>(lettersSize);
-    public static ArrayBlockingQueue<String> queueC = new ArrayBlockingQueue<>(lettersSize);
+    public static final int LETTERS_SIZE = 100;
+    public static ArrayBlockingQueue<String> queueA = new ArrayBlockingQueue<>(LETTERS_SIZE);
+    public static ArrayBlockingQueue<String> queueB = new ArrayBlockingQueue<>(LETTERS_SIZE);
+    public static ArrayBlockingQueue<String> queueC = new ArrayBlockingQueue<>(LETTERS_SIZE);
 
     public static void main(String[] args) throws InterruptedException {
         Thread textGeneration = new Thread(() -> {
-            for (int i = 0; i < lettersSize; i++) {
+            for (int i = 0; i < LETTERS_SIZE; i++) {
                 Random random = new Random();
                 queueA.add(generateText("abc", 3 + random.nextInt(3)));
                 queueB.add(generateText("abc", 3 + random.nextInt(3)));
@@ -29,7 +30,6 @@ public class Main {
             maxA.ifPresent(System.out::println);
         });
         findMaxA.start();
-        findMaxA.join();
 
         Thread findMaxB = new Thread(() -> {
             var maxB = queueA.stream()
@@ -38,7 +38,6 @@ public class Main {
             maxB.ifPresent(System.out::println);
         });
         findMaxB.start();
-        findMaxB.join();
 
         Thread findMaxC = new Thread(() -> {
             var maxC = queueA.stream()
@@ -47,6 +46,9 @@ public class Main {
             maxC.ifPresent(System.out::println);
         });
         findMaxC.start();
+
+        findMaxA.join();
+        findMaxB.join();
         findMaxC.join();
     }
 
